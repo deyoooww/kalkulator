@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Calculator Vault</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+-webkit-tap-highlight-color:transparent;
+}
+
+body{
+background:black;
+color:white;
+overflow:hidden;
+}
+
+/* PAGE */
+
+.page{
+position:absolute;
+top:0;
+left:0;
+width:100%;
+height:100vh;
+background:black;
+display:none;
+overflow:auto;
+}
+
+.active{
+display:block;
+}
+
+/* CALCULATOR */
+
+.calculator{
+width:100%;
+height:100vh;
+padding:20px;
+display:flex;
+flex-direction:column;
+justify-content:flex-end;
+}
+
+.display{
+text-align:right;
+margin-bottom:25px;
+}
+
+.expression{
+font-size:65px;
+font-weight:bold;
+word-break:break-word;
+}
+
+.result{
+color:#888;
+font-size:28px;
+margin-top:10px;
+}
+
+.buttons{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:15px;
+}
+
+.btn{
+height:82px;
+border:none;
+border-radius:50%;
+font-size:30px;
+cursor:pointer;
+}
+
+.btn:active{
+transform:scale(0.92);
+}
+
+.num{
+background:black;
+color:white;
+}
+
+.gray{
+background:#bdbdbd;
+color:black;
+}
+
+.orange{
+background:#ff9800;
+color:white;
+}
+
+/* CONTENT */
+
+.content{
+padding:20px;
+padding-bottom:120px;
+}
+
+.title{
+font-size:42px;
+font-weight:bold;
+margin-bottom:25px;
+}
+
+.card{
+background:#111;
+border-radius:25px;
+padding:20px;
+margin-bottom:20px;
+}
+
+.upload{
+display:block;
+background:#ff9800;
+padding:18px;
+border-radius:20px;
+text-align:center;
+font-weight:bold;
+margin-bottom:25px;
+cursor:pointer;
+}
+
+.gallery{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:15px;
+}
+
+.media-card{
+background:#111;
+border-radius:20px;
+overflow:hidden;
+}
+
+.media-card img,
+.media-card video{
+width:100%;
+height:220px;
+object-fit:cover;
+background:black;
+cursor:pointer;
+}
+
+.media-card p{
+padding:10px;
+font-size:14px;
+}
+
+/* PROFILE */
+
+.profile{
+text-align:center;
+}
+
+.profile img{
+width:100px;
+height:100px;
+border-radius:50%;
+object-fit:cover;
+margin-bottom:15px;
+}
+
+.input{
+width:100%;
+height:50px;
+border:none;
+border-radius:12px;
+background:#222;
+color:white;
+padding:15px;
+margin-top:10px;
+}
+
+.save{
+width:100%;
+height:55px;
+border:none;
+border-radius:15px;
+background:#ff9800;
+color:white;
+margin-top:15px;
+font-size:18px;
+cursor:pointer;
+}
+
+/* NAV */
+
+.nav{
+position:fixed;
+bottom:0;
+left:0;
+width:100%;
+background:#111;
+display:flex;
+justify-content:space-around;
+padding:12px 0;
+}
+
+.nav button{
+background:none;
+border:none;
+color:#888;
+font-size:15px;
+cursor:pointer;
+}
+
+.nav .active-nav{
+color:#ff9800;
+}
+
+/* VIEWER */
+
+.viewer{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100vh;
+background:black;
+display:none;
+justify-content:center;
+align-items:center;
+z-index:999;
+}
+
+.viewer-content{
+width:100%;
+padding:20px;
+}
+
+.viewer img,
+.viewer video{
+width:100%;
+max-height:90vh;
+object-fit:contain;
+}
+
+.close-btn{
+position:absolute;
+top:20px;
+right:20px;
+width:50px;
+height:50px;
+border:none;
+border-radius:50%;
+background:#ff9800;
+color:white;
+font-size:22px;
+cursor:pointer;
+}
+
+.qr{
+width:100%;
+border-radius:20px;
+margin-top:20px;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- PAGE 1 -->
+
+<div class="page active" id="setupPage">
+
+<div class="calculator">
+
+<div class="display">
+
+<div class="result">
+Buat Kode Vault
+</div>
+
+<div class="expression" id="setupDisplay">
+0
+</div>
+
+</div>
+
+<div class="buttons" id="setupButtons"></div>
+
+</div>
+
+</div>
+
+<!-- PAGE 2 -->
+
+<div class="page" id="calculatorPage">
+
+<div class="calculator">
+
+<div class="display">
+
+<div class="result" id="calcResult"></div>
+
+<div class="expression" id="calcDisplay">
+0
+</div>
+
+</div>
+
+<div class="buttons" id="calcButtons"></div>
+
+</div>
+
+</div>
+
+<!-- VAULT -->
+
+<div class="page" id="vaultPage">
+
+<div class="content">
+
+<div class="title">
+Vault
+</div>
+
+<label class="upload">
+
+Upload Foto / Video
+
+<input
+hidden
+type="file"
+accept="image/*,video/*"
+multiple
+onchange="uploadFiles(event)">
+
+</label>
+
+<div class="gallery" id="gallery"></div>
+
+</div>
+
+<div class="nav">
+
+<button class="active-nav"
+onclick="showPage('vaultPage')">
+Vault
+</button>
+
+<button
+onclick="showPage('cloudPage')">
+Cloud
+</button>
+
+<button
+onclick="showPage('premiumPage')">
+Premium
+</button>
+
+<button
+onclick="showPage('profilePage')">
+Profil
+</button>
+
+</div>
+
+</div>
+
+<!-- CLOUD -->
+
+<div class="page" id="cloudPage">
+
+<div class="content">
+
+<div class="title">
+Cloud Backup
+</div>
+
+<div class="card">
+
+<h2>Backup Aktif</h2>
+
+<p style="color:#888;margin-top:10px;">
+Semua file aman tersimpan.
+</p>
+
+</div>
+
+</div>
+
+<div class="nav">
+
+<button
+onclick="showPage('vaultPage')">
+Vault
+</button>
+
+<button class="active-nav">
+Cloud
+</button>
+
+<button
+onclick="showPage('premiumPage')">
+Premium
+</button>
+
+<button
+onclick="showPage('profilePage')">
+Profil
+</button>
+
+</div>
+
+</div>
+
+<!-- PREMIUM -->
+
+<div class="page" id="premiumPage">
+
+<div class="content">
+
+<div class="title">
+Premium
+</div>
+
+<div class="card">
+
+<h2 style="color:#ff9800;">
+Unlimited Storage
+</h2>
+
+<p style="color:#888;margin-top:10px;">
+Upgrade untuk storage tanpa batas.
+</p>
+
+<button
+class="save"
+onclick="openPayment()">
+Upgrade Premium
+</button>
+
+</div>
+
+<div
+class="card"
+id="paymentBox"
+style="display:none;">
+
+<h2>
+Metode Pembayaran
+</h2>
+
+<button
+class="save"
+onclick="payMethod('OVO')">
+OVO
+</button>
+
+<button
+class="save"
+onclick="payMethod('GoPay')">
+GoPay
+</button>
+
+<button
+class="save"
+onclick="payMethod('DANA')">
+DANA
+</button>
+
+<button
+class="save"
+onclick="payMethod('ShopeePay')">
+ShopeePay
+</button>
+
+<button
+class="save"
+onclick="showQRIS()">
+QRIS
+</button>
+
+</div>
+
+<div id="paymentResult"></div>
+
+<div
+class="card"
+id="qrisBox"
+style="display:none;text-align:center;">
+
+<h2>
+Scan QRIS
+</h2>
+
+<img
+id="qrisImage"
+class="qr">
+
+<p
+id="trxId"
+style="
+margin-top:15px;
+color:#888;
+">
+</p>
+
+</div>
+
+</div>
+
+<div class="nav">
+
+<button
+onclick="showPage('vaultPage')">
+Vault
+</button>
+
+<button
+onclick="showPage('cloudPage')">
+Cloud
+</button>
+
+<button class="active-nav">
+Premium
+</button>
+
+<button
+onclick="showPage('profilePage')">
+Profil
+</button>
+
+</div>
+
+</div>
+
+<!-- PROFILE -->
+
+<div class="page" id="profilePage">
+
+<div class="content">
+
+<div class="title">
+Profil
+</div>
+
+<div class="card">
+
+<div class="profile">
+
+<img
+id="profilePhoto"
+src="https://i.imgur.com/2DhmtJ4.png">
+
+<h3 id="profileName">
+User
+</h3>
+
+<p
+id="memberStatus"
+style="
+margin-top:8px;
+color:#888;
+">
+Member Biasa
+</p>
+
+</div>
+
+<input
+class="input"
+id="nameInput"
+placeholder="Ganti nama">
+
+<input
+class="input"
+type="file"
+accept="image/*"
+onchange="changePhoto(event)">
+
+<button
+class="save"
+onclick="saveProfile()">
+Simpan
+</button>
+
+</div>
+
+</div>
+
+<div class="nav">
+
+<button
+onclick="showPage('vaultPage')">
+Vault
+</button>
+
+<button
+onclick="showPage('cloudPage')">
+Cloud
+</button>
+
+<button
+onclick="showPage('premiumPage')">
+Premium
+</button>
+
+<button class="active-nav">
+Profil
+</button>
+
+</div>
+
+</div>
+
+<!-- VIEWER -->
+
+<div
+class="viewer"
+id="viewer">
+
+<button
+class="close-btn"
+onclick="closeViewer()">
+✕
+</button>
+
+<div
+class="viewer-content"
+id="viewerContent">
+</div>
+
+</div>
+
+<script>
+
+/* PAGE */
+
+function showPage(id){
+
+document
+.querySelectorAll('.page')
+.forEach(page=>{
+
+page.classList.remove('active');
+
+});
+
+document
+.getElementById(id)
+.classList.add('active');
+
+}
+
+/* BUTTONS */
+
+const buttonList = [
+'C','⌫','%','/',
+'7','8','9','*',
+'4','5','6','-',
+'1','2','3','+',
+'.','0','00','='
+];
+
+function createButtons(containerId,callback){
+
+const container =
+document.getElementById(containerId);
+
+buttonList.forEach(value=>{
+
+const btn =
+document.createElement('button');
+
+btn.innerText=value;
+
+btn.className='btn ';
+
+if(
+['+','-','*','/','=']
+.includes(value)
+){
+
+btn.className+='orange';
+
+}else if(
+['C','⌫','%']
+.includes(value)
+){
+
+btn.className+='gray';
+
+}else{
+
+btn.className+='num';
+
+}
+
+btn.onclick=()=>callback(value);
+
+container.appendChild(btn);
+
+});
+
+}
+
+/* SETUP */
+
+let setupExpression='';
+
+const setupDisplay =
+document.getElementById('setupDisplay');
+
+createButtons(
+'setupButtons',
+handleSetup
+);
+
+function handleSetup(value){
+
+if(value==='C'){
+
+setupExpression='';
+
+setupDisplay.innerText='0';
+
+return;
+}
+
+if(value==='⌫'){
+
+setupExpression =
+setupExpression.slice(0,-1);
+
+setupDisplay.innerText =
+setupExpression || '0';
+
+return;
+}
+
+if(value==='='){
+
+if(setupExpression===''){
+return;
+}
+
+localStorage.setItem(
+'vault-code',
+setupExpression
+);
+
+showPage('calculatorPage');
+
+return;
+}
+
+setupExpression += value;
+
+setupDisplay.innerText =
+setupExpression;
+
+}
+
+/* CALCULATOR */
+
+let calcExpression='';
+
+const calcDisplay =
+document.getElementById('calcDisplay');
+
+const calcResult =
+document.getElementById('calcResult');
+
+createButtons(
+'calcButtons',
+handleCalc
+);
+
+function handleCalc(value){
+
+if(value==='C'){
+
+calcExpression='';
+
+calcDisplay.innerText='0';
+
+calcResult.innerText='';
+
+return;
+}
+
+if(value==='⌫'){
+
+calcExpression =
+calcExpression.slice(0,-1);
+
+calcDisplay.innerText =
+calcExpression || '0';
+
+return;
+}
+
+if(value==='='){
+
+if(
+calcExpression ===
+localStorage.getItem('vault-code')
+){
+
+showPage('vaultPage');
+
+return;
+}
+
+try{
+
+const result =
+eval(calcExpression);
+
+calcResult.innerText =
+'= '+result;
+
+calcExpression =
+result.toString();
+
+calcDisplay.innerText =
+calcExpression;
+
+}catch{
+
+calcResult.innerText='Error';
+
+}
+
+return;
+}
+
+calcExpression += value;
+
+calcDisplay.innerText =
+calcExpression;
+
+}
+
+/* FILES */
+
+let files=[];
+
+function uploadFiles(event){
+
+const uploaded =
+Array.from(event.target.files);
+
+uploaded.forEach(file=>{
+
+const reader =
+new FileReader();
+
+reader.onload=function(e){
+
+files.push({
+
+name:file.name,
+
+type:file.type,
+
+src:e.target.result
+
+});
+
+renderGallery();
+
+};
+
+reader.readAsDataURL(file);
+
+});
+
+}
+
+function renderGallery(){
+
+const gallery =
+document.getElementById('gallery');
+
+gallery.innerHTML='';
+
+files.forEach(file=>{
+
+const card =
+document.createElement('div');
+
+card.className='media-card';
+
+/* FOTO */
+
+if(
+file.type.startsWith('image/')
+){
+
+const img =
+document.createElement('img');
+
+img.src=file.src;
+
+img.onclick=()=>{
+
+openViewer(
+'image',
+file.src
+);
+
+};
+
+card.appendChild(img);
+
+}
+
+/* VIDEO */
+
+else if(
+file.type.startsWith('video/')
+){
+
+const video =
+document.createElement('video');
+
+video.src=file.src;
+
+video.controls=true;
+
+video.playsInline=true;
+
+video.onclick=()=>{
+
+openViewer(
+'video',
+file.src
+);
+
+};
+
+card.appendChild(video);
+
+}
+
+const text =
+document.createElement('p');
+
+text.innerText=file.name;
+
+card.appendChild(text);
+
+gallery.appendChild(card);
+
+});
+
+}
+
+/* VIEWER */
+
+function openViewer(type,src){
+
+const viewer =
+document.getElementById(
+'viewer'
+);
+
+const content =
+document.getElementById(
+'viewerContent'
+);
+
+content.innerHTML='';
+
+if(type==='image'){
+
+const img =
+document.createElement('img');
+
+img.src=src;
+
+content.appendChild(img);
+
+}
+
+else if(type==='video'){
+
+const video =
+document.createElement('video');
+
+video.src=src;
+
+video.controls=true;
+
+video.autoplay=true;
+
+video.playsInline=true;
+
+content.appendChild(video);
+
+}
+
+viewer.style.display='flex';
+
+}
+
+function closeViewer(){
+
+document.getElementById(
+'viewer'
+).style.display='none';
+
+document.getElementById(
+'viewerContent'
+).innerHTML='';
+
+}
+
+/* PROFILE */
+
+function changePhoto(event){
+
+const file =
+event.target.files[0];
+
+const reader =
+new FileReader();
+
+reader.onload=function(e){
+
+document.getElementById(
+'profilePhoto'
+).src=e.target.result;
+
+}
+
+reader.readAsDataURL(file);
+
+}
+
+function saveProfile(){
+
+const name =
+document.getElementById(
+'nameInput'
+).value;
+
+if(name){
+
+document.getElementById(
+'profileName'
+).innerText=name;
+
+}
+
+}
+
+/* PREMIUM */
+
+function openPayment(){
+
+document.getElementById(
+'paymentBox'
+).style.display='block';
+
+}
+
+function payMethod(name){
+
+const randomId =
+'TRX'+Math.floor(
+Math.random()*999999999
+);
+
+document.getElementById(
+'paymentResult'
+).innerHTML = `
+
+<div style="
+margin-top:20px;
+background:#111;
+padding:20px;
+border-radius:20px;
+">
+
+<h3 style="
+color:#ff9800;
+margin-bottom:15px;
+">
+Pembayaran ${name}
+</h3>
+
+<div style="
+display:flex;
+justify-content:space-between;
+margin-bottom:10px;
+color:#888;
+">
+<span>ID</span>
+<span>${randomId}</span>
+</div>
+
+<div style="
+display:flex;
+justify-content:space-between;
+margin-bottom:10px;
+color:#888;
+">
+<span>Status</span>
+<span style="color:lime;">
+Berhasil
+</span>
+</div>
+
+<div style="
+display:flex;
+justify-content:space-between;
+margin-bottom:10px;
+color:#888;
+">
+<span>Paket</span>
+<span>Premium</span>
+</div>
+
+<div style="
+display:flex;
+justify-content:space-between;
+color:#888;
+">
+<span>Total</span>
+<span>Rp 29.000</span>
+</div>
+
+</div>
+
+`;
+
+activatePremium();
+
+}
+
+function showQRIS(){
+
+const random =
+Math.floor(
+Math.random()*999999999
+);
+
+const qr =
+'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=PAY-'+random;
+
+document.getElementById(
+'qrisImage'
+).src=qr;
+
+document.getElementById(
+'trxId'
+).innerText=
+'TRX-'+random;
+
+document.getElementById(
+'qrisBox'
+).style.display='block';
+
+setTimeout(()=>{
+
+document.getElementById(
+'paymentResult'
+).innerHTML = `
+
+<div style="
+margin-top:20px;
+background:#111;
+padding:20px;
+border-radius:20px;
+">
+
+<h3 style="
+color:#ff9800;
+margin-bottom:15px;
+">
+Pembayaran QRIS
+</h3>
+
+<div style="
+display:flex;
+justify-content:space-between;
+margin-bottom:10px;
+color:#888;
+">
+<span>ID</span>
+<span>TRX-${random}</span>
+</div>
+
+<div style="
+display:flex;
+justify-content:space-between;
+margin-bottom:10px;
+color:#888;
+">
+<span>Status</span>
+<span style="color:lime;">
+Berhasil
+</span>
+</div>
+
+<div style="
+display:flex;
+justify-content:space-between;
+color:#888;
+">
+<span>Total</span>
+<span>Rp 29.000</span>
+</div>
+
+</div>
+
+`;
+
+activatePremium();
+
+},3000);
+
+}
+
+/* PREMIUM STATUS */
+
+function activatePremium(){
+
+localStorage.setItem(
+'premium-status',
+'true'
+);
+
+updateMemberStatus();
+
+}
+
+function updateMemberStatus(){
+
+const badge =
+document.getElementById(
+'memberStatus'
+);
+
+if(
+localStorage.getItem(
+'premium-status'
+)==='true'
+){
+
+badge.innerHTML =
+'Member Premium 👑';
+
+badge.style.color =
+'#ff9800';
+
+}else{
+
+badge.innerHTML =
+'Member Biasa';
+
+badge.style.color =
+'#888';
+
+}
+
+}
+
+window.onload=function(){
+
+updateMemberStatus();
+
+}
+
+</script>
+
+</body>
+</html>
